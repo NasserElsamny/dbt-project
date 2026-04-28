@@ -1,5 +1,4 @@
-{{ config(materialized="view", schema="L2_STAGING") }}
-
+{{ config( materialized='incremental',unique_key='ORDERID', schema="L2_STAGING") }}
 select
     orderid,
     orderdate,
@@ -20,3 +19,7 @@ select
     updated_at,
     current_timestamp as dbt_updated_at
 from {{ source("LANDING", "ORDERS") }}
+
+{% if is_incremental() %}
+where  Updated_at >= (select max(dbt_updated_at) from {{ this }})
+{% endif %}
