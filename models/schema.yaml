@@ -24,3 +24,15 @@ models:
           - accepted_values:
               arguments:
                 values: ["01", "02", "03"]
+
+  - name: order_items_stg
+    description: Staged order items data from order management system (OMS)
+    columns:
+      - name: OrderID
+
+  - name: orderitems_unique
+    description: Same as orderitems_uniq but with unique orderid records only
+    tests:
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          arguments:
+            compare_model: ref("orders_stg")
