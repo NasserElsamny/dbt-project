@@ -2,25 +2,25 @@ version: 2
 
 models:
   - name: customers_stg
-    description:
+    description: Staged customer data from order management system (OMS)
     columns:
       - name: Email
-        description:
+        description: Customer's primay email address
         tests:
           - string_not_empty
 
   - name: orders_stg
-    description:
+    description: Staged orders data from order management system (OMS)
     columns:
       - name: OrderID
-        description:
+        description: The primary key for orders_stg table
         tests:
           - unique
           - not_null
 
       - name: StatusCD
-        description:
+        description: "{{ doc('StatusCD') }}"
         tests:
           - accepted_values:
-              arguments:              
+              arguments:
                 values: ["01", "02", "03"]
