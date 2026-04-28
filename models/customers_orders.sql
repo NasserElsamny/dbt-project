@@ -1,12 +1,16 @@
-{{ config(materialized='table') }}
+{{ config(materialized="table", schema="L3_CURATED") }}
 
-WITH CUSTOMERORDER AS (
-    SELECT C.CUSTOMERID, CONCAT(C.FIRSTNAME, ' ', C.LASTNAME) AS CUSTOMERNAME, COUNT(O.ORDERID) AS ORDERCOUNT
-    FROM {{ source('LANDING', 'CUSTOMERS') }} C
-    JOIN {{ source('LANDING', 'ORDERS') }} O ON C.CUSTOMERID = O.CUSTOMERID
-    GROUP BY C.CUSTOMERID, CUSTOMERNAME
-    ORDER BY ORDERCOUNT DESC
-)
+with
+    customerorder as (
+        select
+            c.customerid,
+            concat(c.firstname, ' ', c.lastname) as customername,
+            count(o.orderid) as ordercount
+        from {{ source("LANDING", "CUSTOMERS") }} c
+        join {{ source("LANDING", "ORDERS") }} o on c.customerid = o.customerid
+        group by c.customerid, customername
+        order by ordercount desc
+    )
 
-SELECT CUSTOMERID, CUSTOMERNAME, ORDERCOUNT
-FROM CUSTOMERORDER
+select customerid, customername, ordercount
+from customerorder
