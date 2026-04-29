@@ -1,4 +1,7 @@
-{{ config(materialized="table", schema="L3_CURATED") }}
+{{ config(materialized="table", schema="L3_CURATED", 
+    pre_hook = [ log_start_time(this) ],
+    post_hook = [ log_end_time(this) ])
+}}
 
 select
     c.customerid, c.customername, sum(o.revenue) revenue, sum(o.ordercount) ordercount

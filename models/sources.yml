@@ -43,3 +43,10 @@ sources:
         description: trips bookings data
       - name: TRAVELLERS
         description: travelers data
+
+  - name: audit
+    database: SLEEKMART_OMS
+    schema: AUDIT
+    tables:
+      - name: model_runs
+        description: tracker to all models runs
