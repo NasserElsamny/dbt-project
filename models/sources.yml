@@ -13,3 +13,12 @@ sources:
       - name: STORES
       - name: SUPPLIERS
       - name: ORDERITEMS
+
+  - name: sales
+    database: SLEEKMART_OMS
+    schema: SALES
+    tables:
+      - name: city_temperature
+      - name: sales_us
+      - name: sales_uk
+      - name: sales_india
