@@ -1,13 +1,55 @@
 version: 2
 
+
+seeds:
+  - name: salestargets
+    description: Store-level sales targets for performance comparison
+    columns:
+      - name: StoreID
+        description: Unique store identifier
+      - name: SalesTarget
+        description: Target sales amount for the store
+
+snapshots:
+  - name: customers_history
+    description: Tracks slowly changing dimension (SCD) history for customers using timestamp strategy.
+    columns:
+      - name: CUSTOMERID
+        description: Unique customer identifier
+      - name: ...
+        description: All columns from the source CUSTOMERS table are tracked
+
 models:
   - name: customers_stg
     description: Staged customer data from order management system (OMS)
     columns:
+      - name: CustomerID
+        description: Unique customer identifier
+        tests:
+          - not_null
+          - unique
+      - name: FirstName
+        description: Customer's first name
+      - name: LastName
+        description: Customer's last name
       - name: Email
-        description: Customer's primay email address
+        description: Customer's primary email address
         tests:
           - string_not_empty
+      - name: Phone
+        description: Customer's phone number
+      - name: Address
+        description: Customer's address
+      - name: City
+        description: Customer's city
+      - name: State
+        description: Customer's state
+      - name: ZipCode
+        description: Customer's postal code
+      - name: Updated_at
+        description: Timestamp of last update
+      - name: CustomerName
+        description: Full name of the customer (derived)
 
   - name: orders_stg
     description: Staged orders data from order management system (OMS)
@@ -17,22 +59,178 @@ models:
         tests:
           - unique
           - not_null
-
+      - name: OrderDate
+        description: Date the order was placed
+      - name: CustomerID
+        description: Foreign key to customer
+      - name: EmployeeID
+        description: Foreign key to employee
+      - name: StoreID
+        description: Foreign key to store
       - name: StatusCD
         description: "{{ doc('StatusCD') }}"
         tests:
           - accepted_values:
               arguments:
                 values: ["01", "02", "03"]
+      - name: StatusDesc
+        description: Human-readable order status
+      - name: Order_Channel
+        description: Order channel (Online/In-store)
+      - name: Updated_at
+        description: Timestamp of last update
+      - name: dbt_updated_at
+        description: Timestamp of dbt run
 
   - name: order_items_stg
     description: Staged order items data from order management system (OMS)
     columns:
+      - name: OrderItemID
+        description: Unique identifier for each order item
+        tests:
+          - unique
+          - not_null
       - name: OrderID
+        description: Foreign key to orders_stg table
+      - name: ProductID
+        description: Foreign key to product
+      - name: Quantity
+        description: Number of units ordered
+      - name: UnitPrice
+        description: Price per unit
+      - name: TotalPrice
+        description: Calculated as quantity * unitprice
+      - name: Updated_at
+        description: Timestamp of last update
 
   - name: orderitems_unique
-    description: Same as orderitems_uniq but with unique orderid records only
+    description: Deduplicated order items with the latest record per orderid, using dbt_utils.deduplicate macro.
+    columns:
+      - name: OrderItemID
+        description: Unique identifier for each order item
+      - name: OrderID
+        description: Unique order identifier
+      - name: ProductID
+        description: Foreign key to product
+      - name: Quantity
+        description: Number of units ordered
+      - name: UnitPrice
+        description: Price per unit
+      - name: TotalPrice
+        description: Calculated as quantity * unitprice
+      - name: Updated_at
+        description: Timestamp of last update
     tests:
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           arguments:
             compare_model: ref("orders_stg")
+
+  - name: orders_fact
+    description: Fact table aggregating order and revenue information at the order level, joined with order items.
+    columns:
+      - name: OrderID
+        description: Unique order identifier
+      - name: OrderDate
+        description: Date the order was placed
+      - name: CustomerID
+        description: Foreign key to customer
+      - name: EmployeeID
+        description: Foreign key to employee
+      - name: StoreID
+        description: Foreign key to store
+      - name: StatusCD
+        description: Order status code (see docs block StatusCD)
+      - name: StatusDesc
+        description: Human-readable order status
+      - name: OrderCount
+        description: Number of orders (should be 1 per row)
+      - name: Revenue
+        description: Total revenue for the order
+      - name: Updated_at
+        description: Timestamp of last update
+
+  - name: customers_orders
+    description: Curated model showing the total number of orders per customer, ordered by order count descending.
+    columns:
+      - name: CustomerID
+        description: Unique customer identifier
+      - name: CustomerName
+        description: Full name of the customer
+      - name: OrderCount
+        description: Total number of orders placed by the customer
+
+  - name: customers_revenue
+    description: Curated model aggregating total revenue and order count per customer.
+    columns:
+      - name: CustomerID
+        description: Unique customer identifier
+      - name: CustomerName
+        description: Full name of the customer
+      - name: Revenue
+        description: Total revenue generated by the customer
+      - name: OrderCount
+        description: Total number of orders placed by the customer
+
+  - name: store_performance
+    description: Model comparing actual sales to target sales for each store.
+    columns:
+      - name: StoreID
+        description: Unique store identifier
+      - name: ActualSales
+        description: Actual sales revenue for the store
+      - name: TargetSales
+        description: Target sales revenue for the store
+
+  - name: profit_us
+    description: Profit calculation for US sales using the generate_profit_model macro.
+    columns:
+      - name: Sales_Date
+        description: Date of sale
+      - name: Total_Revenue
+        description: Total revenue for the date
+      - name: Total_Cost
+        description: Total cost for the date
+      - name: Total_Profit
+        description: Total profit for the date
+
+  - name: profit_uk
+    description: Profit calculation for UK sales using the generate_profit_model macro.
+    columns:
+      - name: Sales_Date
+        description: Date of sale
+      - name: Total_Revenue
+        description: Total revenue for the date
+      - name: Total_Cost
+        description: Total cost for the date
+      - name: Total_Profit
+        description: Total profit for the date
+
+  - name: profit_india
+    description: Profit calculation for India sales using the generate_profit_model macro.
+    columns:
+      - name: Sales_Date
+        description: Date of sale
+      - name: Total_Revenue
+        description: Total revenue for the date
+      - name: Total_Cost
+        description: Total cost for the date
+      - name: Total_Profit
+        description: Total profit for the date
+
+macros:
+  - name: generate_profit_model
+    description: |
+      Macro to generate a profit calculation model for a given schema and table. Returns sales_date, total revenue, total cost, and total profit.
+    arguments:
+      - name: schema_name
+        description: Schema containing the sales table
+      - name: table_name
+        description: Table name for sales fact
+  - name: generate_schema_name
+    description: |
+      Macro to generate schema name for a model, using custom schema if provided, otherwise defaulting to target.schema.
+    arguments:
+      - name: custom_schema_name
+        description: Custom schema name (optional)
+      - name: node
+        description: dbt node object

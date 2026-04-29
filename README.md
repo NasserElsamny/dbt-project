@@ -1,15 +1,60 @@
-Welcome to your new dbt project!
+## dbt-project: Feature Showcase
 
-### Using the starter project
+This repository demonstrates core dbt features and best practices for analytics engineering. It is designed as a public reference to showcase dbt knowledge and project structure.
 
-Try running the following commands:
-- dbt run
-- dbt test
+### Project Structure
 
+- **models/**: Staging, fact, and curated models with full documentation and tests
+- **macros/**: Custom Jinja macros for reusable SQL logic
+- **seeds/**: Example static data (e.g., sales targets)
+- **snapshots/**: SCD Type 2 snapshot for customer history
+- **tests/**: Custom and generic data quality tests
+- **analyses/**: (Optional) Ad-hoc analysis queries
 
-### Resources:
-- Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
-- Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
-- Join the [dbt community](https://getdbt.com/community) to learn from other analytics engineers
-- Find [dbt events](https://events.getdbt.com) near you
-- Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
+### Key Features Demonstrated
+
+- Source definitions with documentation (see models/sources.yml)
+- Staging models for raw data transformation
+- Incremental models (orders_stg)
+- Fact and curated models (orders_fact, customers_orders, customers_revenue)
+- Use of dbt_utils and dbt-expectations packages
+- Custom macros (generate_profit_model, generate_schema_name)
+- Seeds and snapshots
+- Extensive schema and column-level documentation
+- Custom and generic tests (including dbt-expectations)
+
+### How to Run
+
+1. Install dependencies:
+	```
+	dbt deps
+	```
+2. Run models:
+	```
+	dbt run
+	```
+3. Run tests:
+	```
+	dbt test
+	```
+
+### Model Overview
+
+| Model                | Materialization | Description                                 |
+|----------------------|-----------------|---------------------------------------------|
+| customers_stg        | view            | Staged customer data                        |
+| orders_stg           | incremental     | Staged orders with incremental logic        |
+| order_items_stg      | view            | Staged order items                         |
+| orders_fact          | view            | Fact table for orders and revenue           |
+| customers_orders     | table           | Orders per customer (curated)               |
+| customers_revenue    | table           | Revenue per customer (curated)              |
+| store_performance    | (add if exists) | Store sales vs. targets                     |
+| profit_us/uk/india   | (macro)         | Profit calculation by region                |
+
+### Packages Used
+- [dbt-utils](https://hub.getdbt.com/dbt-labs/dbt_utils/latest/)
+- [dbt-expectations](https://github.com/calogica/dbt-expectations)
+
+### More Resources
+- [dbt Documentation](https://docs.getdbt.com/docs/introduction)
+- [dbt Community](https://getdbt.com/community)

@@ -6,19 +6,31 @@ sources:
     schema: L1_LANDING
     tables:
       - name: CUSTOMERS
+        description: Customer master data
       - name: ORDERS
+        description: Orders placed by customers
       - name: DATES
+        description: Calendar and date dimension
       - name: EMPLOYEES
+        description: Employee master data
       - name: PRODUCTS
+        description: Product master data
       - name: STORES
+        description: Store master data
       - name: SUPPLIERS
+        description: Supplier master data
       - name: ORDERITEMS
+        description: Items in each order
 
   - name: sales
     database: SLEEKMART_OMS
     schema: SALES
     tables:
       - name: city_temperature
+        description: City-level temperature data
       - name: sales_us
+        description: US sales fact table
       - name: sales_uk
+        description: UK sales fact table
       - name: sales_india
+        description: India sales fact table
