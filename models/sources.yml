@@ -34,3 +34,12 @@ sources:
         description: UK sales fact table
       - name: sales_india
         description: India sales fact table
+  
+  - name: training
+    database: SLEEKMART_OMS
+    schema: TRAINING
+    tables:
+      - name: TRIP_BOOKINGS
+        description: trips bookings data
+      - name: TRAVELLERS
+        description: travelers data
